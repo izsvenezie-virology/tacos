@@ -26,7 +26,7 @@ def main(coverage_file, output, incremental):
     if output:
         fig.savefig(output)
     else:
-        fig.show()
+        plt.show()
 
 
 def plot_coverage(cov_df, fig):
@@ -54,9 +54,9 @@ def plot_coverage(cov_df, fig):
     tick_pos.append(cov_df.shape[0] - 1)
     tick_label.append(chrom_len)
 
-    ax.set_title('Sequence coverage')
-    ax.set_xlabel('Position')
-    ax.set_ylabel('Coverage')
+    ax.set_title('Sequence coverage', fontsize=20)
+    ax.set_xlabel('Position', fontsize=16)
+    ax.set_ylabel('Coverage', fontsize=16)
 
     ax.legend(loc='upper center', frameon=True, ncol=len(chroms))
     ax.set_ylim(bottom=0)

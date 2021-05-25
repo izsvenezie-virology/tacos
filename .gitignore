@@ -3,3 +3,6 @@ cover_plotter_venv
 *.pdf
 *.cov*
 one_test
+build
+dist
+*egg-info
