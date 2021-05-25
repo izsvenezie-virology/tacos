@@ -2,3 +2,4 @@ cover_plotter_venv
 .vscode
 *.pdf
 *.cov*
+one_test

@@ -1,4 +1,3 @@
-from os import sep
 from click.types import File
 from matplotlib import pyplot as plt, ticker
 import click
