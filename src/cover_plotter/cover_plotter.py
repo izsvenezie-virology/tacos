@@ -1,9 +1,9 @@
 from click.types import File
-from matplotlib import pyplot as plt, ticker
+from matplotlib import pyplot as plt, ticker, colors
 import click
 import pandas as pd
 import math
-pd.options.mode.chained_assignment = None
+pd.options.mode.chained_assignment = None # Stops annoying warning messages form pandas
 
 
 @click.command(help='Creates plots from a coverage file')
@@ -88,20 +88,25 @@ def get_ticks(length, distance, offset):
 
 def plot_incremental(cov_df, fig):
     chroms = cov_df.chrom.unique()
+    color_pallette = list(colors.TABLEAU_COLORS.keys())
     gs = fig.add_gridspec(3,3)
     x = 0
     y = 0
 
-    for chrom in chroms:
+    for i, chrom in enumerate(chroms):
         incr_df = cov_df.loc[cov_df.chrom == chrom, 'cov'].value_counts().sort_index(ascending=True).to_frame()
-        ax = fig.add_subplot(gs[x,y])
-        ax.plot(incr_df.index.values.tolist(), incr_df['cov'].cumsum().sort_index(ascending=False))
-        
+        ax = fig.add_subplot(gs[y,x])
+        ax.plot(incr_df.index.values.tolist(), incr_df['cov'].cumsum().sort_index(ascending=False), color_pallette[i])
+        ax.set_title(chrom)
+        ax.set(xlabel='Coverage', ylabel='# positions with at least coverage')
+        ax.grid(which='major', alpha=.8, color='#CCCCCC', linestyle='--')
+
         x += 1
         if x >= 3:
             x = 0
             y += 1
     
+    fig.suptitle('Incremental coverage', fontsize=20)
     return fig
 
 

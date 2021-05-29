@@ -4,8 +4,8 @@ setup(
     name='cover_plotter',
     version='0.1.0',
     author='EdoardoGiussani',
-    author_email='giussaniedoardo@gmail.com',
-    description='A simple python tool to create plots from coverage data',
+    author_email='egiussani@izsvenezie.it',
+    description='Plot your coverage data',
     package_dir={'': 'src'},
     packages=find_packages(where='src'),
     install_requires=[
