@@ -99,6 +99,8 @@ def format_ticks(tick_val, _):
 
 def get_ticks_pos(length, offset):
     number = int(length/get_ticks_pos.distance)
+    if number == 0:
+        number = 1
     delta = math.ceil(length/number)
 
     pos = [offset]
@@ -109,8 +111,8 @@ def get_ticks_pos(length, offset):
 
 def plot_incremental(cov_df, fig):
     chroms = cov_df.chrom.unique()
-    color_pallette = list(colors.TABLEAU_COLORS.keys())
-    gs = fig.add_gridspec(3, 3)
+    gr_rows, gr_cols = grid_shaper(len(chroms))
+    gs = fig.add_gridspec(gr_rows, gr_cols)
     x = 0
     y = 0
 
@@ -119,18 +121,34 @@ def plot_incremental(cov_df, fig):
         ).sort_index(ascending=True).to_frame()
         ax = fig.add_subplot(gs[y, x])
         ax.plot(incr_df.index.values.tolist(), incr_df['cov'].cumsum(
-        ).sort_index(ascending=False), color_pallette[i])
+        ).sort_index(ascending=False), color_selector(i))
         ax.set_title(chrom)
         ax.set(xlabel='Coverage', ylabel='# positions with at least coverage')
         ax.grid(which='major', alpha=.8, color='#CCCCCC', linestyle='--')
 
         x += 1
-        if x >= 3:
+        if x >= gr_cols:
             x = 0
             y += 1
 
     fig.suptitle('Incremental coverage', fontsize=20)
     return fig
+
+
+def grid_shaper(plots_count):
+    rows = 1
+    cols = 1
+    while rows*cols < plots_count:
+        cols += 1
+        if rows*cols >= plots_count:
+            break
+        rows += 1
+    return rows, cols
+
+
+def color_selector(index):
+    color_pallette = list(colors.TABLEAU_COLORS.keys())
+    return color_pallette[index % len(color_pallette)]
 
 
 if __name__ == '__main__':
