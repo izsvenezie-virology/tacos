@@ -16,13 +16,12 @@ def main(coverage_file, output, incremental):
     cov_df = pd.read_csv(coverage_file, sep='\t', header=None, names=[
                          'chrom', 'pos', 'cov'], keep_default_na=False)
 
-    fig = plt.figure(figsize=(16, 9))
+    fig = plt.figure(figsize=(16, 9), tight_layout=True)
     if incremental:
         fig = plot_incremental(cov_df, fig)
     else:
         fig = plot_coverage(cov_df, fig)
 
-    fig.tight_layout()
     if output:
         fig.savefig(output)
     else:
