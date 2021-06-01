@@ -1,4 +1,4 @@
-from matplotlib import pyplot as plt, ticker, colors
+from matplotlib import pyplot as plt, colors
 import click
 import pandas as pd
 import math
@@ -8,7 +8,7 @@ pd.options.mode.chained_assignment = None
 
 @click.command(help='Creates plots from a coverage file')
 @click.option('-o', '--output', type=click.Path(file_okay=True),
-              help='the output pdf file path')
+              help='name of output pdf file')
 @click.option('-i', '--incremental', is_flag=True,
               help='creates a plot with the coverage values on x axis and the number of postionos on y axis')
 @click.argument('coverage_file', type=click.types.File('r'))
