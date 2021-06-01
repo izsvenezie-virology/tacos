@@ -36,6 +36,7 @@ def plot_coverage(cov_df, fig):
     tick_pos = list()
     tick_label = list()
     chroms = cov_df.chrom.unique()
+    format_ticks.ticks = cov_df['pos'].tolist()
 
     for chrom in chroms:
         chrom_df = cov_df.loc[cov_df.chrom == chrom]
@@ -61,12 +62,20 @@ def plot_coverage(cov_df, fig):
     ax.set_ylim(bottom=0)
 
     ax.yaxis.set_major_locator(ticker.LinearLocator(20))
-    plt.sca(ax)
-    plt.xticks(tick_pos, tick_label, rotation=90)
+
+    ax.xaxis.set_major_locator(ticker.LinearLocator(40))
+    ax.xaxis.set_major_formatter(format_ticks)
+    ax.tick_params(labelrotation=270)
+    ax.set_xticks(tick_pos)
+
     ax.grid(which='major', alpha=.8, color='#CCCCCC', linestyle='--')
 
     return fig
 
+def format_ticks(tick_val, tick_pos):
+    if int(tick_val) in range(len(format_ticks.ticks)):
+        return format_ticks.ticks[int(tick_val)]
+    return ''
 
 def get_ticks(length, distance, offset):
     number = int(length/distance)
