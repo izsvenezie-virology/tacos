@@ -81,8 +81,7 @@ def format_axes(ax, tick_pos):
     ax.set_xticks(tick_pos)
     ax.set_xticklabels([], rotation=40, ha='right')
     ax.xaxis.set_major_formatter(format_ticks)
-    ax.tick_params(axis='x', labelsize=8)
-    ax.tick_params(axis='y', labelsize=8)
+    ax.tick_params(axis='both', labelsize=8)
     return ax
 
 
