@@ -1,4 +1,4 @@
-cover_plotter_venv
+*venv*
 .vscode
 *.pdf
 *.cov*
@@ -7,3 +7,4 @@ build
 dist
 *egg-info
 __pycache__
+.gitignore
