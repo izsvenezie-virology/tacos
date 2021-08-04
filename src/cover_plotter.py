@@ -1,7 +1,12 @@
+from typing import Any
 from matplotlib import pyplot as plt, colors
 import click
+from click.types import File, Path
+from matplotlib.figure import Figure
 import pandas as pd
 import math
+
+from pandas.core.frame import DataFrame
 from __metadata__ import __version__, __author__, __contact__
 # Stops annoying warning messages form pandas
 pd.options.mode.chained_assignment = None
@@ -10,13 +15,11 @@ pd.options.mode.chained_assignment = None
 @click.command(help='Creates plots from a coverage file')
 @click.version_option(__version__, '-v', '--version', message=f'%(prog)s, version %(version)s, by {__author__} ({__contact__})')
 @click.help_option('-h', '--help')
-@click.option('-o', '--output', type=click.Path(file_okay=True),
-              help='name of output pdf file')
-@click.option('-i', '--incremental', is_flag=True,
-              help='creates a plot with the coverage values on x axis and the number of postionos on y axis')
-@click.argument('coverage_file', type=click.types.File('r'))
-def main(coverage_file, output, incremental):
-
+@click.option('-o', '--output', type=Path(file_okay=True), help='Name of output pdf file.')
+@click.option('-i', '--incremental', is_flag=True, help='Creates a plot with the coverage values on x axis and the number of postionos on y axis')
+@click.argument('coverage_file', type=File('r'))
+def main(coverage_file: File, output: Path, incremental: bool) -> None:
+    '''Plots the coverage data.'''
     cov_df = pd.read_csv(coverage_file, sep='\t',
                          header=None, names=['chrom', 'pos', 'cov'],
                          keep_default_na=False)
@@ -33,7 +36,8 @@ def main(coverage_file, output, incremental):
         plt.show()
 
 
-def plot_coverage(cov_df, fig):
+def plot_coverage(cov_df: DataFrame, fig: Figure) -> Figure:
+    '''Plot the coverage in standard way'''
     ax = fig.add_subplot(1, 1, 1)
 
     ax, ticks = plot_chroms_coverage(ax, cov_df)
@@ -43,7 +47,8 @@ def plot_coverage(cov_df, fig):
     return fig
 
 
-def plot_chroms_coverage(ax, cov_df):
+def plot_chroms_coverage(ax: plt.axes, cov_df: DataFrame) -> tuple[plt.axes, list[int]]:
+    '''Plots the coverage for each chromosome and set x ticks'''
     pos_offset = 0
     tick_pos = list()
     chroms = cov_df.chrom.unique()
@@ -66,7 +71,8 @@ def plot_chroms_coverage(ax, cov_df):
     return ax, tick_pos
 
 
-def format_subplot(ax, legend_cols):
+def format_subplot(ax:plt.axes, legend_cols: int) -> plt.axes:
+    '''Format the axes setting title, labels, legend and grid'''
     if legend_cols > 10:
         legend_cols = 10
     ax.set_title('Sequence coverage', fontsize=20)
@@ -77,7 +83,8 @@ def format_subplot(ax, legend_cols):
     return ax
 
 
-def format_axes(ax, tick_pos):
+def format_axes(ax: plt.axes, tick_pos: list[int]) -> plt.axes:
+    '''Format X and Y axes parameters'''
     ax.set_ylim(bottom=0)
     plt.locator_params(axis="y", nbins=20)
 
@@ -88,7 +95,8 @@ def format_axes(ax, tick_pos):
     return ax
 
 
-def format_ticks(tick_val, _):
+def format_ticks(tick_val: str, _: Any) -> str:
+    '''Formatter for X ticks'''
     int_val = int(tick_val)
     if int_val in range(len(format_ticks.ticks)):
         val = format_ticks.ticks[int_val]
@@ -99,7 +107,8 @@ def format_ticks(tick_val, _):
     return ''
 
 
-def get_ticks_pos(length, offset):
+def get_ticks_pos(length: int, offset: int) -> list[int]:
+    '''Collect all positions for X ticks'''
     number = int(length/get_ticks_pos.distance)
     if number == 0:
         number = 1
@@ -111,7 +120,8 @@ def get_ticks_pos(length, offset):
     return pos
 
 
-def plot_incremental(cov_df, fig):
+def plot_incremental(cov_df: DataFrame, fig: Figure) -> Figure:
+    '''Plots the coverage in incremental mode'''
     chroms = cov_df.chrom.unique()
     gr_rows, gr_cols = grid_shaper(len(chroms))
     gs = fig.add_gridspec(gr_rows, gr_cols)
@@ -137,7 +147,8 @@ def plot_incremental(cov_df, fig):
     return fig
 
 
-def grid_shaper(plots_count):
+def grid_shaper(plots_count: int) -> tuple[int, int]:
+    '''Find the best disposition for subplots on a grid'''
     rows = 1
     cols = 1
     while rows*cols < plots_count:
@@ -148,7 +159,8 @@ def grid_shaper(plots_count):
     return rows, cols
 
 
-def color_selector(index):
+def color_selector(index: int) -> str:
+    '''select the color based on index'''
     color_pallette = list(colors.TABLEAU_COLORS.keys())
     return color_pallette[index % len(color_pallette)]
 
