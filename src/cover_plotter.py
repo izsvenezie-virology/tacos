@@ -2,11 +2,14 @@ from matplotlib import pyplot as plt, colors
 import click
 import pandas as pd
 import math
+from __metadata__ import __version__, __author__, __contact__
 # Stops annoying warning messages form pandas
 pd.options.mode.chained_assignment = None
 
 
 @click.command(help='Creates plots from a coverage file')
+@click.version_option(__version__, '-v', '--version', message=f'%(prog)s, version %(version)s, by {__author__} ({__contact__})')
+@click.help_option('-h', '--help')
 @click.option('-o', '--output', type=click.Path(file_okay=True),
               help='name of output pdf file')
 @click.option('-i', '--incremental', is_flag=True,
