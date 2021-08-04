@@ -1,1 +1,10 @@
-cover_plotter_venv
+*venv*
+.vscode
+*.pdf
+*.cov*
+one_test
+build
+dist
+*egg-info
+__pycache__
+.gitignore
