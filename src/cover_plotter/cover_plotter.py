@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, List, Tuple
 from matplotlib import pyplot as plt, colors
 import click
 from click.types import File, Path
@@ -10,7 +10,7 @@ from pandas.core.frame import DataFrame
 # Stops annoying warning messages form pandas
 pd.options.mode.chained_assignment = None
 
-__version__ = '1.0.1'
+__version__ = '1.0.2'
 __author__ = 'EdoardoGiussani'
 __contact__ = 'egiussani@izsvenezie.it'
 
@@ -49,7 +49,7 @@ def plot_coverage(cov_df: DataFrame, fig: Figure) -> Figure:
     return fig
 
 
-def plot_chroms_coverage(ax: plt.axes, cov_df: DataFrame) -> tuple[plt.axes, list[int]]:
+def plot_chroms_coverage(ax: plt.axes, cov_df: DataFrame) -> Tuple[plt.axes, List[int]]:
     '''Plots the coverage for each chromosome and set x ticks'''
     pos_offset = 0
     tick_pos = list()
@@ -85,7 +85,7 @@ def format_subplot(ax:plt.axes, legend_cols: int) -> plt.axes:
     return ax
 
 
-def format_axes(ax: plt.axes, tick_pos: list[int]) -> plt.axes:
+def format_axes(ax: plt.axes, tick_pos: List[int]) -> plt.axes:
     '''Format X and Y axes parameters'''
     ax.set_ylim(bottom=0)
     plt.locator_params(axis="y", nbins=20)
@@ -109,7 +109,7 @@ def format_ticks(tick_val: str, _: Any) -> str:
     return ''
 
 
-def get_ticks_pos(length: int, offset: int) -> list[int]:
+def get_ticks_pos(length: int, offset: int) -> List[int]:
     '''Collect all positions for X ticks'''
     number = int(length/get_ticks_pos.distance)
     if number == 0:
@@ -149,7 +149,7 @@ def plot_incremental(cov_df: DataFrame, fig: Figure) -> Figure:
     return fig
 
 
-def grid_shaper(plots_count: int) -> tuple[int, int]:
+def grid_shaper(plots_count: int) -> Tuple[int, int]:
     '''Find the best disposition for subplots on a grid'''
     rows = 1
     cols = 1
