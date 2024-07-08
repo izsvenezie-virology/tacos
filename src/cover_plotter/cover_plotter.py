@@ -10,7 +10,7 @@ from pandas.core.frame import DataFrame
 # Stops annoying warning messages form pandas
 pd.options.mode.chained_assignment = None
 
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 __author__ = 'EdoardoGiussani'
 __contact__ = 'egiussani@izsvenezie.it'
 
@@ -87,8 +87,7 @@ def format_subplot(ax:plt.axes, legend_cols: int) -> plt.axes:
 
 def format_axes(ax: plt.axes, tick_pos: List[int]) -> plt.axes:
     '''Format X and Y axes parameters'''
-    ax.set_ylim(bottom=0)
-    plt.locator_params(axis="y", nbins=20)
+    ax.set_yscale("log")
 
     ax.set_xticks(tick_pos)
     ax.set_xticklabels([], rotation=40, ha='right')
