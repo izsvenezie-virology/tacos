@@ -1,6 +1,33 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
-]
 build-backend = "setuptools.build_meta"
+requires = [
+  "setuptools>=42",
+  "wheel",
+]
+
+[project]
+authors = [
+  {name = "giussanie", email = "egiussani@izsvenezie.it"},
+  {name = "sartoria", email = "asartori@izsvenezie.it"},
+]
+dependencies = [
+  "click",
+  "matplotlib",
+  "pandas",
+  "numpy",
+]
+description = "Plot your coverage data"
+dynamic = ["version"]
+license = {file = "LICENSE"}
+name = "tacos"
+readme = "README.md"
+requires-python = ">=3.6"
+
+[project.scripts]
+tacos = "tacos.tacos:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = {attr = "tacos.tacos.__version__"}
