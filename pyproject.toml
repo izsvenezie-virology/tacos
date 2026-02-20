@@ -24,7 +24,7 @@ readme = "README.md"
 requires-python = ">=3.6"
 
 [project.scripts]
-tacos = "tacos.tacos:main"
+tacos = "tacos.tacos:cli"
 
 [tool.setuptools.packages.find]
 where = ["src"]
