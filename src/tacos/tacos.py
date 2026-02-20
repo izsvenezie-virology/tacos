@@ -28,7 +28,8 @@ def main(coverage_file: TextIO, output_file: str) -> None:
         keep_default_na=False,
     )
 
-    fig = plt.figure(figsize=(16, 9), tight_layout=True)
+    fig = plt.figure(figsize=(16, 9))
+    fig.subplots_adjust(left=0.05, right=0.98)
     fig = plot_coverage(fig, cov_df)
 
     fig.savefig(output_file)
@@ -38,8 +39,8 @@ def plot_coverage(fig: Figure, cov_df: DataFrame) -> Figure:
     """Plot the coverage split by chromosome with proportional subplot widths."""
     chroms = cov_df.chrom.unique().tolist()
     chrom_dfs = [cov_df.loc[cov_df.chrom == chrom] for chrom in chroms]
-    width_ratios = [chrom_df.shape[0] for chrom_df in chrom_dfs]
 
+    width_ratios = [chrom_df.shape[0] for chrom_df in chrom_dfs]
     gs = fig.add_gridspec(
         2,
         len(chroms),
@@ -48,14 +49,10 @@ def plot_coverage(fig: Figure, cov_df: DataFrame) -> Figure:
         wspace=0,
     )
 
-    top_axes = plot_chroms_coverage(fig, gs, 0, chroms, chrom_dfs)
-    top_axes = format_subplot(top_axes, True)
-    # top_axes[0].set_title("Sequence coverage", fontsize=20, pad=14)
-
-    low_axes = plot_chroms_coverage(fig, gs, 1, chroms, chrom_dfs)
-    low_axes = format_subplot(low_axes, False)
-    for ax in low_axes:
-        ax.set_ylim(top=100)
+    top_axes = plot_chroms_coverage(fig, gs, 0, chrom_dfs)
+    top_axes = format_top_axes(top_axes)
+    bottom_axes = plot_chroms_coverage(fig, gs, 1, chrom_dfs)
+    bottom_axes = format_bottom_axes(bottom_axes, 100)
 
     fig.supxlabel("Position", fontsize=16)
 
@@ -66,42 +63,42 @@ def plot_chroms_coverage(
     fig: Figure,
     gs: GridSpec,
     row_idx: int,
-    chroms: List[str],
     chrom_dfs: List[DataFrame],
 ) -> List[Axes]:
     """Plot chromosome coverage in a row of proportional subplots."""
+    cmap = plt.get_cmap("Dark2")
     row_axes: List[Axes] = []
-    for col_idx, (chrom, chrom_df) in enumerate(zip(chroms, chrom_dfs)):
+
+    for col_idx, chrom_df in enumerate(chrom_dfs):
+        color = cmap(col_idx % cmap.N)
+
         ax = fig.add_subplot(
             gs[row_idx, col_idx], sharey=row_axes[0] if row_axes else None
         )
-        ax.plot(chrom_df["pos"], chrom_df["cov"], linewidth=0.5)
-        ax.set_title(chrom, fontsize=8)
-        ax = format_axes(ax, chrom_df.shape[0])
-        if row_axes:
-            ax.tick_params(labelleft=False)
+
+        ax.plot(chrom_df["pos"], chrom_df["cov"], linewidth=1, color=color)
+        ax.set_title(chrom_df["chrom"].iloc[0], fontsize=8)
+        ax = format_x_axis(ax, chrom_df.shape[0])
+        ax = format_y_axis(ax)
+
         row_axes.append(ax)
 
+    format_row_axes(row_axes)
     return row_axes
 
 
-def format_subplot(axes: List[Axes], log: bool) -> List[Axes]:
-    """Apply common Y formatting to a row of axes."""
-    last_idx = len(axes) - 1
-    for idx, ax in enumerate(axes):
-        if log:
-            ax.set_yscale("log")
-        ax.grid(which="major", alpha=0.8, color="#CCCCCC", linestyle="--")
+def format_y_axis(axes: Axes) -> Axes:
+    axes.grid(which="major", alpha=0.8, color="#CCCCCC", linestyle="--")
 
-        ax.spines["left"].set_visible(idx == 0)
-        ax.spines["right"].set_visible(idx == last_idx)
-        ax.tick_params(axis="y", which="both", left=idx == 0, right=False)
+    axes.spines["left"].set_visible(False)
+    axes.spines["right"].set_visible(False)
+    axes.tick_params(labelleft=False)
+    axes.tick_params(axis="y", which="both", left=False, right=False)
 
-    axes[0].set_ylabel("Coverage", fontsize=16)
     return axes
 
 
-def format_axes(ax: Axes, length: int) -> Axes:
+def format_x_axis(ax: Axes, length: int) -> Axes:
     """Format X and Y axes parameters."""
     ax.xaxis.set_major_locator(mticker.MaxNLocator(nbins=4, min_n_ticks=3))
     ax.tick_params(axis="both", labelsize=8)
@@ -109,6 +106,29 @@ def format_axes(ax: Axes, length: int) -> Axes:
     plt.setp(ax.get_xticklabels(), ha="right")
     ax.set_xlim(0, length)
     return ax
+
+
+def format_row_axes(axes: List[Axes]) -> List[Axes]:
+    first_ax = axes[0]
+    first_ax.set_ylabel("Coverage", fontsize=16)
+    first_ax.spines["left"].set_visible(True)
+    first_ax.tick_params(axis="y", which="both", left=True, right=False, labelleft=True)
+
+    last_ax = axes[-1]
+    last_ax.spines["right"].set_visible(True)
+    return axes
+
+
+def format_top_axes(axes: List[Axes]) -> List[Axes]:
+    first_ax = axes[0]
+    first_ax.set_yscale("log")
+    return axes
+
+
+def format_bottom_axes(axes: List[Axes], upper_lim: int) -> List[Axes]:
+    last_ax = axes[-1]
+    last_ax.set_ylim(0, upper_lim)
+    return axes
 
 
 # fmt: off
