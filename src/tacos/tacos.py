@@ -42,7 +42,7 @@ def plot_coverage(fig: Figure, cov_df: DataFrame, min_coverage: int) -> Figure:
 
     width_ratios = [chrom_df.shape[0] for chrom_df in chrom_dfs]
     gs = fig.add_gridspec(
-        2,
+        2 if min_coverage > 0 else 1,
         len(chroms),
         width_ratios=width_ratios,
         hspace=0.25,
@@ -51,9 +51,9 @@ def plot_coverage(fig: Figure, cov_df: DataFrame, min_coverage: int) -> Figure:
 
     top_axes = plot_chroms_coverage(fig, gs, 0, chrom_dfs, 0)
     top_axes = format_top_axes(top_axes)
-
-    bottom_axes = plot_chroms_coverage(fig, gs, 1, chrom_dfs, min_coverage)
-    bottom_axes = format_bottom_axes(bottom_axes, min_coverage * 2)
+    if min_coverage > 0:
+        bottom_axes = plot_chroms_coverage(fig, gs, 1, chrom_dfs, min_coverage)
+        bottom_axes = format_bottom_axes(bottom_axes, min_coverage * 2)
 
     fig.supxlabel("Position", fontsize=16)
 
