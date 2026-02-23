@@ -98,13 +98,25 @@ def format_y_axis(axes: Axes) -> Axes:
     return axes
 
 
-def format_x_axis(ax: Axes, length: int) -> Axes:
+def format_x_axis(ax: Axes, x_max: int) -> Axes:
     """Format X and Y axes parameters."""
-    ax.xaxis.set_major_locator(mticker.MaxNLocator(nbins=4, min_n_ticks=3))
+    locator = mticker.MaxNLocator(nbins=4, min_n_ticks=3, integer=True)
+    ticks = [int(round(tick)) for tick in locator.tick_values(0, x_max)]
+    if 0 not in ticks:
+        ticks.insert(0, 0)
+    if x_max not in ticks:
+        ticks.append(x_max)
+    ticks = sorted(set(ticks))
+
+    ax.set_xticks(ticks)
+    tick_labels = [f"{tick:.0f}" for tick in ticks]
+    tick_labels[0] = ""
+    tick_labels[-2] = f"{x_max}-0"
+    ax.set_xticklabels(tick_labels)
     ax.tick_params(axis="both", labelsize=8)
     ax.tick_params(axis="x", labelrotation=45)
     plt.setp(ax.get_xticklabels(), ha="right")
-    ax.set_xlim(0, length)
+    ax.set_xlim(0, x_max)
     return ax
 
 
@@ -113,9 +125,15 @@ def format_row_axes(axes: List[Axes]) -> List[Axes]:
     first_ax.set_ylabel("Coverage", fontsize=16)
     first_ax.spines["left"].set_visible(True)
     first_ax.tick_params(axis="y", which="both", left=True, right=False, labelleft=True)
+    tick_labels = first_ax.get_xticklabels()
+    tick_labels[0].set_text("0")
+    first_ax.set_xticklabels(tick_labels)
 
     last_ax = axes[-1]
     last_ax.spines["right"].set_visible(True)
+    tick_labels = last_ax.get_xticklabels()
+    tick_labels[-2].set_text(tick_labels[-2].get_text().replace("-0", ""))
+    last_ax.set_xticklabels(tick_labels)
     return axes
 
 
