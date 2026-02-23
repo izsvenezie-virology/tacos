@@ -18,7 +18,7 @@ __author__ = "EdoardoGiussani"
 __contact__ = "egiussani@izsvenezie.it"
 
 
-def main(coverage_file: TextIO, output_file: str) -> None:
+def main(coverage_file: TextIO, output_file: str, min_coverage: int) -> None:
     """Plots the coverage data."""
     cov_df = pd.read_csv(
         coverage_file,
@@ -30,12 +30,12 @@ def main(coverage_file: TextIO, output_file: str) -> None:
 
     fig = plt.figure(figsize=(16, 9))
     fig.subplots_adjust(left=0.05, right=0.98)
-    fig = plot_coverage(fig, cov_df)
+    fig = plot_coverage(fig, cov_df, min_coverage)
 
     fig.savefig(output_file)
 
 
-def plot_coverage(fig: Figure, cov_df: DataFrame) -> Figure:
+def plot_coverage(fig: Figure, cov_df: DataFrame, min_coverage: int) -> Figure:
     """Plot the coverage split by chromosome with proportional subplot widths."""
     chroms = cov_df.chrom.unique().tolist()
     chrom_dfs = [cov_df.loc[cov_df.chrom == chrom] for chrom in chroms]
@@ -49,10 +49,11 @@ def plot_coverage(fig: Figure, cov_df: DataFrame) -> Figure:
         wspace=0,
     )
 
-    top_axes = plot_chroms_coverage(fig, gs, 0, chrom_dfs)
+    top_axes = plot_chroms_coverage(fig, gs, 0, chrom_dfs, 0)
     top_axes = format_top_axes(top_axes)
-    bottom_axes = plot_chroms_coverage(fig, gs, 1, chrom_dfs)
-    bottom_axes = format_bottom_axes(bottom_axes, 100)
+
+    bottom_axes = plot_chroms_coverage(fig, gs, 1, chrom_dfs, min_coverage)
+    bottom_axes = format_bottom_axes(bottom_axes, min_coverage * 2)
 
     fig.supxlabel("Position", fontsize=16)
 
@@ -64,6 +65,7 @@ def plot_chroms_coverage(
     gs: GridSpec,
     row_idx: int,
     chrom_dfs: List[DataFrame],
+    min_coverage: int,
 ) -> List[Axes]:
     """Plot chromosome coverage in a row of proportional subplots."""
     cmap = plt.get_cmap("Dark2")
@@ -77,6 +79,7 @@ def plot_chroms_coverage(
         )
 
         ax.plot(chrom_df["pos"], chrom_df["cov"], linewidth=1, color=color)
+        highlight_low_coverage_regions(ax, chrom_df, min_coverage)
         ax.set_title(chrom_df["chrom"].iloc[0], fontsize=8)
         ax = format_x_axis(ax, chrom_df.shape[0])
         ax = format_y_axis(ax)
@@ -96,6 +99,27 @@ def format_y_axis(axes: Axes) -> Axes:
     axes.tick_params(axis="y", which="both", left=False, right=False)
 
     return axes
+
+
+def highlight_low_coverage_regions(
+    ax: Axes, chrom_df: DataFrame, min_coverage: int
+) -> Axes:
+    x = chrom_df["pos"].to_numpy()
+    below_threshold = chrom_df["cov"].to_numpy() < min_coverage
+
+    if below_threshold.any():
+        ax.fill_between(
+            x,
+            0,
+            1,
+            where=below_threshold.tolist(),
+            transform=ax.get_xaxis_transform(),
+            color="#f6bcbc",
+            alpha=0.35,
+            interpolate=True,
+            zorder=0,
+        )
+    return ax
 
 
 def format_x_axis(ax: Axes, x_max: int) -> Axes:
@@ -153,6 +177,7 @@ def format_bottom_axes(axes: List[Axes], upper_lim: int) -> List[Axes]:
 @click.command(help='Creates plots from a coverage file')
 @click.version_option(__version__, '-v', '--version', message=f'%(prog)s, version %(version)s, by {__author__} ({__contact__})')
 @click.help_option('-h', '--help')
+@click.option('-m', '--min-coverage', default=0, show_default=True, help='Coverage threshold for marking low-coverage regions')
 @click.argument('coverage_file', type=File('r'))
 @click.argument('output_file', type=Path(file_okay=True))
 def cli(*args, **kwargs):
