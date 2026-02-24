@@ -1,31 +1,61 @@
 # Tacos
-A simple python tool to create plots from coverage data.
-Plots can be interactive or printed in a PDF file.
+
+`tacos` is a Python CLI tool that plots genome coverage data from a tab-separated file.
 
 ## Installation
-To install tacos you need to register to [IZSVenezie's GitLab](https://gitlab.izsvenezie.it).
-Open your console and enter:
-```
-git clone https://gitlab.izsvenezie.it/EdoardoGiussani/tacos
+
+Clone and install locally:
+
+```bash
+git clone https://github.com/izsvenezie-virology/tacos.git
 cd tacos
 pip install .
 ```
-Finish! Now you can plot your beautiful coverage in beautiful charts.
 
-## Standard plot
-Shows the coverage for each region of the genome.
-To plot your coverage data just type:
-```
-tacos -o output.pdf coveragefile.cov
-```
+## Input format
 
-## Incremental plots
-Shows the number of positions of the genome with a specific coverage.
-Option ```-i``` allows to print this kind of chart:
+The input coverage file must be tab-separated (`.tsv`), with no header, and 3 columns:
 
-```
-tacos -i -o output_incremental.pdf coveragefile.cov
+1. chromosome name
+2. position
+3. coverage
+
+Can be obtained with [bedtools genomecov](https://bedtools.readthedocs.io/en/latest/content/tools/genomecov.html).
+
+```bash
+bedtools genomecov -d -ibam BAM_FILE > COVERAGE_FILE
 ```
 
-## Outputs
-When the ```-o``` option is specified the plot will be saved in a file in PDF format. If this option is omitted the plots are displayed in interactive mode.
+## Usage
+
+```bash
+tacos [OPTIONS] COVERAGE_FILE OUTPUT_FILE
+```
+
+### Arguments
+
+- `COVERAGE_FILE`: input coverage TSV file.
+- `OUTPUT_FILE`: output plot file path (`.pdf`).
+
+### Options
+
+- `-s`, `--sample-name TEXT`: sample name to display in the plot title.
+- `-m`, `--min-coverage INTEGER`: coverage threshold used to highlight low-coverage regions. Default: `0`.
+
+## Examples
+
+Basic plot:
+
+```bash
+tacos coverage.tsv coverage.pdf
+```
+
+![Example of a basic plot](resources/example_base.png)
+
+Highlight low-coverage regions below 20x with sample name:
+
+```bash
+tacos -m 20 -s ID123456 coverage.tsv coverage_min20.pdf
+```
+
+![Plot minimum coverage example](resources/example_with_min_cov.png)
