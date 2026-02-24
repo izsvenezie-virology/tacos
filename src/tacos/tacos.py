@@ -124,18 +124,20 @@ def highlight_low_coverage_regions(
 
 def format_x_axis(ax: Axes, x_max: int) -> Axes:
     """Format X and Y axes parameters."""
-    locator = mticker.MaxNLocator(nbins=4, min_n_ticks=3, integer=True)
-    ticks = [int(round(tick)) for tick in locator.tick_values(0, x_max)]
-    if 0 not in ticks:
-        ticks.insert(0, 0)
+    locator = mticker.MaxNLocator(nbins="auto", min_n_ticks=3, integer=True)
+    ticks = [int(tick) for tick in locator.tick_values(0, x_max) if tick <= x_max]
     if x_max not in ticks:
         ticks.append(x_max)
     ticks = sorted(set(ticks))
-
     ax.set_xticks(ticks)
+
     tick_labels = [f"{tick:.0f}" for tick in ticks]
     tick_labels[0] = ""
-    tick_labels[-2] = f"{x_max}-0"
+    tick_labels[-1] = f"{x_max}-0"
+    tick_gap_ratio = (ticks[-1] - ticks[-2]) / max(x_max, 1)
+    if tick_gap_ratio < 0.05:
+        tick_labels[-2] = ""
+
     ax.set_xticklabels(tick_labels)
     ax.tick_params(axis="both", labelsize=8)
     ax.tick_params(axis="x", labelrotation=45)
