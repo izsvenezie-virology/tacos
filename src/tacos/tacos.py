@@ -18,7 +18,9 @@ __author__ = "EdoardoGiussani"
 __contact__ = "egiussani@izsvenezie.it"
 
 
-def main(coverage_file: TextIO, output_file: str, min_coverage: int) -> None:
+def main(
+    coverage_file: TextIO, output_file: str, min_coverage: int, sample_name: str
+) -> None:
     """Plots the coverage data."""
     cov_df = pd.read_csv(
         coverage_file,
@@ -32,6 +34,8 @@ def main(coverage_file: TextIO, output_file: str, min_coverage: int) -> None:
     fig.subplots_adjust(left=0.05, right=0.98)
     fig = plot_coverage(fig, cov_df, min_coverage)
 
+    title = f"Coverage for {sample_name}" if sample_name else "Coverage"
+    fig.suptitle(title, fontsize=18)
     fig.savefig(output_file)
 
 
@@ -124,25 +128,28 @@ def highlight_low_coverage_regions(
 
 def format_x_axis(ax: Axes, x_max: int) -> Axes:
     """Format X and Y axes parameters."""
+    ax.set_xlim(0, x_max)
+    ax.tick_params(axis="both", labelsize=8)
+    ax.tick_params(axis="x", labelrotation=45)
+    plt.setp(ax.get_xticklabels(), ha="right")
+
     locator = mticker.MaxNLocator(nbins="auto", min_n_ticks=3, integer=True)
     ticks = [int(tick) for tick in locator.tick_values(0, x_max) if tick <= x_max]
     if x_max not in ticks:
         ticks.append(x_max)
     ticks = sorted(set(ticks))
+
+    tick_gap_ratio = (ticks[-1] - ticks[-2]) / max(x_max, 1)
+    if tick_gap_ratio < 0.05:
+        ticks.pop(-2)
+
     ax.set_xticks(ticks)
 
     tick_labels = [f"{tick:.0f}" for tick in ticks]
     tick_labels[0] = ""
     tick_labels[-1] = f"{x_max}-0"
-    tick_gap_ratio = (ticks[-1] - ticks[-2]) / max(x_max, 1)
-    if tick_gap_ratio < 0.05:
-        tick_labels[-2] = ""
-
     ax.set_xticklabels(tick_labels)
-    ax.tick_params(axis="both", labelsize=8)
-    ax.tick_params(axis="x", labelrotation=45)
-    plt.setp(ax.get_xticklabels(), ha="right")
-    ax.set_xlim(0, x_max)
+
     return ax
 
 
@@ -158,7 +165,7 @@ def format_row_axes(axes: List[Axes]) -> List[Axes]:
     last_ax = axes[-1]
     last_ax.spines["right"].set_visible(True)
     tick_labels = last_ax.get_xticklabels()
-    tick_labels[-2].set_text(tick_labels[-2].get_text().replace("-0", ""))
+    tick_labels[-1].set_text(tick_labels[-1].get_text().replace("-0", ""))
     last_ax.set_xticklabels(tick_labels)
     return axes
 
@@ -179,6 +186,7 @@ def format_bottom_axes(axes: List[Axes], upper_lim: int) -> List[Axes]:
 @click.command(help='Creates plots from a coverage file')
 @click.version_option(__version__, '-v', '--version', message=f'%(prog)s, version %(version)s, by {__author__} ({__contact__})')
 @click.help_option('-h', '--help')
+@click.option('-s', '--sample-name', default='', help='Sample name to display in the plot title')
 @click.option('-m', '--min-coverage', default=0, show_default=True, help='Coverage threshold for marking low-coverage regions')
 @click.argument('coverage_file', type=File('r'))
 @click.argument('output_file', type=Path(file_okay=True))
