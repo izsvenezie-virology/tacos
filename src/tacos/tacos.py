@@ -13,7 +13,7 @@ from pandas.core.frame import DataFrame
 # Stops annoying warning messages form pandas
 pd.options.mode.chained_assignment = None
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __author__ = "EdoardoGiussani"
 __contact__ = "egiussani@izsvenezie.it"
 
