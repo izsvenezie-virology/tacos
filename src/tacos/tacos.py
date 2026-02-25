@@ -13,7 +13,7 @@ from pandas.core.frame import DataFrame
 # Stops annoying warning messages form pandas
 pd.options.mode.chained_assignment = None
 
-__version__ = "2.1.0"
+__version__ = "2.2.0"
 __author__ = "EdoardoGiussani"
 __contact__ = "egiussani@izsvenezie.it"
 
@@ -35,6 +35,8 @@ def main(
     fig = plot_coverage(fig, cov_df, min_coverage)
 
     title = f"Coverage for {sample_name}" if sample_name else "Coverage"
+    if min_coverage > 0:
+        title += f" (Horizontal coverage: {calculate_horizontal_coverage(cov_df, min_coverage):.2%})"
     fig.suptitle(title, fontsize=18)
     fig.savefig(output_file)
 
@@ -83,8 +85,14 @@ def plot_chroms_coverage(
         )
 
         ax.plot(chrom_df["pos"], chrom_df["cov"], linewidth=1, color=color)
-        highlight_low_coverage_regions(ax, chrom_df, min_coverage)
-        ax.set_title(chrom_df["chrom"].iloc[0], fontsize=8)
+
+        title = chrom_df["chrom"].iloc[0]
+        if min_coverage > 0:
+            highlight_low_coverage_regions(ax, chrom_df, min_coverage)
+            h_cov = calculate_horizontal_coverage(chrom_df, min_coverage)
+            title += f" ({h_cov:.2%})"
+
+        ax.set_title(title, fontsize=8)
         ax = format_x_axis(ax, chrom_df.shape[0])
         ax = format_y_axis(ax)
 
@@ -94,15 +102,10 @@ def plot_chroms_coverage(
     return row_axes
 
 
-def format_y_axis(axes: Axes) -> Axes:
-    axes.grid(which="major", alpha=0.8, color="#CCCCCC", linestyle="--")
-
-    axes.spines["left"].set_visible(False)
-    axes.spines["right"].set_visible(False)
-    axes.tick_params(labelleft=False)
-    axes.tick_params(axis="y", which="both", left=False, right=False)
-
-    return axes
+def calculate_horizontal_coverage(chrom_df: DataFrame, min_coverage: int) -> float:
+    total_positions = chrom_df.shape[0]
+    covered_positions = chrom_df[chrom_df["cov"] >= min_coverage].shape[0]
+    return covered_positions / total_positions if total_positions > 0 else 0
 
 
 def highlight_low_coverage_regions(
@@ -123,6 +126,17 @@ def highlight_low_coverage_regions(
             interpolate=True,
             zorder=0,
         )
+    return ax
+
+
+def format_y_axis(ax: Axes) -> Axes:
+    ax.grid(which="major", alpha=0.8, color="#CCCCCC", linestyle="--")
+
+    ax.spines["left"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.tick_params(labelleft=False)
+    ax.tick_params(axis="y", which="both", left=False, right=False)
+
     return ax
 
 
