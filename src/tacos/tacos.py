@@ -13,7 +13,7 @@ from pandas.core.frame import DataFrame
 # Stops annoying warning messages form pandas
 pd.options.mode.chained_assignment = None
 
-__version__ = "2.2.0"
+__version__ = "2.2.1"
 __author__ = "EdoardoGiussani"
 __contact__ = "egiussani@izsvenezie.it"
 
@@ -27,6 +27,7 @@ def main(
         sep="\t",
         header=None,
         names=["chrom", "pos", "cov"],
+        dtype={"chrom": str, "pos": int, "cov": int},
         keep_default_na=False,
     )
 
@@ -147,7 +148,8 @@ def format_x_axis(ax: Axes, x_max: int) -> Axes:
     ax.tick_params(axis="x", labelrotation=45)
     plt.setp(ax.get_xticklabels(), ha="right")
 
-    locator = mticker.MaxNLocator(nbins="auto", min_n_ticks=3, integer=True)
+    nbins = max(3, x_max // 300)
+    locator = mticker.MaxNLocator(nbins=nbins, min_n_ticks=3, integer=True)
     ticks = [int(tick) for tick in locator.tick_values(0, x_max) if tick <= x_max]
     if x_max not in ticks:
         ticks.append(x_max)
